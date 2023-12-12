@@ -374,6 +374,9 @@ export namespace MarkdownRenderer
 
 	async function postProcessHTML(html: HTMLElement)
 	{
+		// @ts-ignore
+		let promises = [];
+
 		// transclusions put a div inside a p tag, which is invalid html. Fix it here
 		html.querySelectorAll("p:has(div)").forEach((element) =>
 		{
@@ -441,6 +444,28 @@ export namespace MarkdownRenderer
 			canvas.replaceWith(image);
 		});
 
+		html.querySelectorAll("img").forEach((img: HTMLImageElement) =>
+		{
+			if (!img.src.startsWith("blob:app://obsidian.md/"))
+			{
+				return;
+			}
+			let loader = async () =>
+		    {
+				let container = document.createElement("div");
+				img.classList.forEach((s: string) => container.classList.add(s));
+				container.style.width = img.style.width || "100%";
+				container.style.maxWidth = img.style.maxWidth || "100%";
+				let resp = await fetch(img.src);
+				container.innerHTML = await resp.text();
+				if (container.firstChild != null)
+				{
+					img.replaceWith(container);
+				}
+		    };
+			promises.push(loader());
+		});
+
 		// if the dynamic table of contents plugin is included on this page
 		// then parse each list item and render markdown for it
 		let tocEls = Array.from(html.querySelectorAll(".block-language-toc.dynamic-toc li > a"));
@@ -451,6 +476,9 @@ export namespace MarkdownRenderer
 			element.textContent = renderEl.textContent;
 			renderEl.remove();
 		}
+
+		// @ts-ignore
+		await Promise.all(promises);
 	}
 
     export async function beginBatch()
