@@ -18,6 +18,7 @@ const { minify } = require('html-minifier-terser');
 export class AssetHandler
 {
 	private static vaultPluginsPath: Path;
+	private static staticJs: Map<string, string> = new Map<string, string>();
 
 	private static obsidianStylesFilter = 
 	["workspace-", "cm-", "ghost", "leaf", "CodeMirror", 
@@ -148,6 +149,12 @@ export class AssetHandler
 				let generatedjsDownload = new Downloadable("generated.js", this.generatedJS, this.jsFolderName);
 				toDownload.push(generatedjsDownload);
 			}
+
+			AssetHandler.staticJs.forEach((contents, name) =>
+			{
+				const staticFile = new Downloadable(name, contents, this.jsFolderName);
+				toDownload.push(staticFile);
+			});
 		}
 		if(MainSettings.settings.includeGraphView)
 		{
@@ -265,6 +272,16 @@ body
 		}
 
 		this.lastMathjaxChanged = changed;
+	}
+
+    public static addStaticJs(name: string, contents: string) 
+	{
+		AssetHandler.staticJs.set(name, contents);
+    }
+
+	public static getStaticJs(): Map<string, string>
+	{
+		return AssetHandler.staticJs;
 	}
 
 	private static async loadAppStyles()
@@ -412,5 +429,4 @@ body
 		}
 		return snippetContents;
 	}
-
 }

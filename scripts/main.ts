@@ -8,10 +8,12 @@ import { AssetHandler } from './html-generation/asset-handler';
 import { MainSettings } from './settings/main-settings';
 import { HTMLExporter } from './exporter';
 import { Path } from './utils/path';
+import { Api } from './api';
 
 export default class HTMLExportPlugin extends Plugin
 {
 	static plugin: HTMLExportPlugin;
+	public api = new Api();
 	
 	async onload()
 	{
