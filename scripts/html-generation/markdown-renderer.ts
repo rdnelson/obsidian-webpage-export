@@ -5,14 +5,18 @@ import { TabManager } from "scripts/utils/tab-manager";
 import { RenderLog } from "./render-log";
 import { MainSettings } from "scripts/settings/main-settings";
 
+
 export namespace MarkdownRenderer
 {
+	export type PostProcessingStage = (html: HTMLElement) => Promise<any> | void;
+
 	export var convertableExtensions = ["md", "canvas"];
 	export let problemLog: string = "";
 	export let renderLeaf: WorkspaceLeaf | undefined;
     export let errorInBatch: boolean = false;
 	export let cancelled: boolean = false;
 	export let batchStarted: boolean = false;
+	export let postProcessStages: Map<string, PostProcessingStage> = new Map<string, PostProcessingStage>();
 
 	export function isConvertable(extention: string)
 	{
@@ -374,8 +378,7 @@ export namespace MarkdownRenderer
 
 	async function postProcessHTML(html: HTMLElement)
 	{
-		// @ts-ignore
-		let promises = [];
+		let promises: Promise<any>[] = [];
 
 		// transclusions put a div inside a p tag, which is invalid html. Fix it here
 		html.querySelectorAll("p:has(div)").forEach((element) =>
@@ -475,6 +478,16 @@ export namespace MarkdownRenderer
 			renderSingleLineMarkdown(element.textContent ?? "", renderEl);
 			element.textContent = renderEl.textContent;
 			renderEl.remove();
+		}
+
+		for (const customStage of postProcessStages.values())
+		{
+			const stagePromise = customStage(html);
+
+			if (stagePromise)
+			{
+				promises.push(stagePromise);
+			}
 		}
 
 		// @ts-ignore

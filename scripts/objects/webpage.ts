@@ -434,7 +434,7 @@ export class Webpage
 			scripts += `\n<script>\n${AssetHandler.webpageJS}\n</script>\n`;
 			scripts += `\n<script>\n${AssetHandler.generatedJS}\n</script>\n`;
 
-			AssetHandler.getStaticJs().forEach((contents, name) =>
+			AssetHandler.staticJs.forEach((contents, name) =>
 			{
 				scripts += `\n<script>\n${contents}\n</script>\n`;
 			});
@@ -444,7 +444,7 @@ export class Webpage
 			scripts += `\n<script src='${relativePaths.jsPath}/webpage.js'></script>\n`;
 			scripts += `\n<script src='${relativePaths.jsPath}/generated.js'></script>\n`;
 
-			AssetHandler.getStaticJs().forEach((contents, name) =>
+			AssetHandler.staticJs.forEach((contents, name) =>
 			{
 				scripts += `\n<script src='${relativePaths.jsPath}/${name}'></script>\n`;
 			});
