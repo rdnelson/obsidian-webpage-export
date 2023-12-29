@@ -8,7 +8,7 @@ import { MainSettings } from "scripts/settings/main-settings";
 
 export namespace MarkdownRenderer
 {
-	export type PostProcessingStage = (html: HTMLElement) => Promise<any> | void;
+	export type PostProcessingStage = (html: HTMLElement, view: any) => Promise<any> | void;
 
 	export var convertableExtensions = ["md", "canvas"];
 	export let problemLog: string = "";
@@ -93,7 +93,7 @@ export namespace MarkdownRenderer
 		if(checkCancelled()) return undefined;
 		if (!html) return failRender(file, "Failed to render file!");
 
-		await postProcessHTML(html);
+		await postProcessHTML(view, html);
 		await AssetHandler.loadMathjaxStyles();
 
 		if (loneFile) MarkdownRenderer.endBatch();
@@ -376,7 +376,7 @@ export namespace MarkdownRenderer
 		return contentEl;
 	}
 
-	async function postProcessHTML(html: HTMLElement)
+	async function postProcessHTML(view: any, html: HTMLElement)
 	{
 		let promises: Promise<any>[] = [];
 
@@ -482,7 +482,7 @@ export namespace MarkdownRenderer
 
 		for (const customStage of postProcessStages.values())
 		{
-			const stagePromise = customStage(html);
+			const stagePromise = customStage(html, view);
 
 			if (stagePromise)
 			{
